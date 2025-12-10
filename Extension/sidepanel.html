@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Darija Translator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div id="loginScreen" class="screen">
+    <div class="logo-container">
+      <img src="icons/logo.png" class="logo" />
+    </div>
+
+    <div class="card">
+      <h2 class="section-label">LOGIN</h2>
+
+      <div class="input-group">
+        <label class="input-label">Username</label>
+        <input type="text" id="username" class="input" placeholder="Enter username">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <input type="password" id="password" class="input" placeholder="Enter password">
+      </div>
+
+      <div id="loginError" class="error-container hidden">
+        <span class="error-text"></span>
+      </div>
+
+      <button id="loginBtn" class="button">
+        <span id="loginBtnText">Login</span>
+        <div id="loginSpinner" class="spinner hidden"></div>
+      </button>
+    </div>
+  </div>
+
+  <div id="translatorScreen" class="screen hidden">
+    <div class="header">
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+
+    <div class="logo-container-small">
+      <img src="icons/logo.png" class="logo" />
+    </div>
+
+    <div class="pickers-row">
+      <div class="picker-wrapper">
+        <label class="picker-label">FROM :</label>
+        <select id="sourceLang" class="picker">
+          <option value="">Select</option>
+          <option value="en">English</option>
+          <option value="darija">Darija</option>
+          <option value="ar">Arabic</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+        </select>
+      </div>
+
+      <div class="picker-wrapper">
+        <label class="picker-label">TO :</label>
+        <select id="targetLang" class="picker">
+          <option value="">Select</option>
+          <option value="en">English</option>
+          <option value="darija">Darija</option>
+          <option value="ar">Arabic</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="input-header">
+        <span class="section-label">SOURCE TEXT</span>
+        <button id="clearBtn" class="clear-btn hidden">Clear</button>
+      </div>
+
+      <textarea id="inputText" class="textarea" placeholder="Enter text..." maxlength="500"></textarea>
+
+      <div class="char-counter">
+        <span id="charCount">0</span>/500 characters
+      </div>
+
+      <div id="translateError" class="error-container hidden">
+        <span class="error-text"></span>
+      </div>
+
+      <button id="translateBtn" class="button">
+        <span id="translateBtnText">Translate</span>
+        <div id="translateSpinner" class="spinner hidden"></div>
+      </button>
+    </div>
+
+    <div id="resultCard" class="result-card hidden">
+      <span class="result-label">TRANSLATION</span>
+      <p id="resultText" class="result-text"></p>
+    </div>
+
+    <div id="resultPlaceholder" class="result-placeholder">
+      <span class="placeholder-text">Translation will appear here</span>
+    </div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+
+</html>
