@@ -27,7 +27,7 @@ This project provides translation services from multiple languages using an LLM 
 
 The project follows a **client-server** architecture where three frontend clients (Web, Mobile, and Extension) consume the backend API (Node.js server) via HTTP requests using the **Fetch API**. The backend communicates with the **Gemini AI model** by building and sending prompts, then returns the translation response to the clients. The API is **secured** with **authentication**, meaning translation can only be performed if the user is authenticated correctly.
 
-![Architecture Diagram](screenshots/architecture.png)
+![Architecture Diagram](screenshots/graphical-abstract.png)
 
 ## (1) Backend API
 
