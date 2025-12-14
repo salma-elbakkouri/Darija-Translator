@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-    BASE_URL: 'http://100.78.43.146:3000',
+    BASE_URL: 'http://192.168.1.101:3000',
     ENDPOINTS: {
         TRANSLATE: '/api/translate',
         LANGUAGES: '/api/languages',

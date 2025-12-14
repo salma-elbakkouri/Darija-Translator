@@ -1,5 +1,3 @@
-const API_BASE_URL = 'http://localhost:3000/api';
-
 const loginScreen = document.getElementById('loginScreen');
 const translatorScreen = document.getElementById('translatorScreen');
 const loginBtn = document.getElementById('loginBtn');
@@ -13,13 +11,36 @@ const targetLang = document.getElementById('targetLang');
 const resultCard = document.getElementById('resultCard');
 const resultPlaceholder = document.getElementById('resultPlaceholder');
 const resultText = document.getElementById('resultText');
+const speakBtn = document.getElementById('speakBtn');
+const togglePassword = document.getElementById('togglePassword');
 
+let lastTimestamp = 0;
+
+// Check for selected text periodically
+function checkForSelectedText() {
+  chrome.storage.local.get(['selectedText', 'timestamp'], (data) => {
+    if (data.selectedText && data.timestamp > lastTimestamp) {
+      lastTimestamp = data.timestamp;
+      inputText.value = data.selectedText;
+      updateCharCount();
+      hideResult();
+      
+      // Clear the stored text after using it
+      chrome.storage.local.remove(['selectedText']);
+    }
+  });
+}
+
+setInterval(checkForSelectedText, CONFIG.POLL_INTERVAL);
+
+// Check login status
 chrome.storage.local.get(['username', 'password'], (data) => {
   if (data.username && data.password) {
     showTranslatorScreen();
   }
 });
 
+// Login
 loginBtn.addEventListener('click', async () => {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
@@ -32,35 +53,30 @@ loginBtn.addEventListener('click', async () => {
   setLoading('login', true);
   
   try {
-    const response = await fetch(`${API_BASE_URL}/translate`, {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/translate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Basic ' + btoa(username + ':' + password)
       },
-      body: JSON.stringify({
-        text: 'test',
-        sourceLang: 'en',
-        targetLang: 'darija'
-      })
+      body: JSON.stringify({ text: 'test', sourceLang: 'en', targetLang: 'darija' })
     });
     
     if (response.ok || response.status === 400) {
-      chrome.storage.local.set({ username, password }, () => {
-        showTranslatorScreen();
-      });
+      chrome.storage.local.set({ username, password }, showTranslatorScreen);
     } else if (response.status === 401) {
       showError('loginError', 'Invalid username or password');
     } else {
-      showError('loginError', 'Login failed. Please try again.');
+      showError('loginError', 'Login failed');
     }
   } catch (error) {
-    showError('loginError', 'Cannot connect to server. Make sure API is running.');
+    showError('loginError', 'Cannot connect to server');
   }
   
   setLoading('login', false);
 });
 
+// Logout
 logoutBtn.addEventListener('click', () => {
   chrome.storage.local.remove(['username', 'password'], () => {
     loginScreen.classList.remove('hidden');
@@ -70,6 +86,23 @@ logoutBtn.addEventListener('click', () => {
   });
 });
 
+// Toggle password visibility
+togglePassword.addEventListener('click', () => {
+  const passwordInput = document.getElementById('password');
+  const eyeIcon = togglePassword.querySelector('.eye-icon');
+  
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.src = 'icons/eye-open.png';
+    eyeIcon.alt = 'Hide password';
+  } else {
+    passwordInput.type = 'password';
+    eyeIcon.src = 'icons/eye-closed.png';
+    eyeIcon.alt = 'Show password';
+  }
+});
+
+// Translate
 translateBtn.addEventListener('click', async () => {
   const text = inputText.value.trim();
   const source = sourceLang.value;
@@ -81,12 +114,12 @@ translateBtn.addEventListener('click', async () => {
   }
   
   if (!source || !target) {
-    showError('translateError', 'Please select source and target languages');
+    showError('translateError', 'Please select languages');
     return;
   }
   
   if (source === target) {
-    showError('translateError', 'Source and target languages must be different');
+    showError('translateError', 'Languages must be different');
     return;
   }
   
@@ -95,17 +128,13 @@ translateBtn.addEventListener('click', async () => {
   
   chrome.storage.local.get(['username', 'password'], async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/translate`, {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Basic ' + btoa(data.username + ':' + data.password)
         },
-        body: JSON.stringify({
-          text,
-          sourceLang: source,
-          targetLang: target
-        })
+        body: JSON.stringify({ text, sourceLang: source, targetLang: target })
       });
       
       if (response.ok) {
@@ -113,9 +142,7 @@ translateBtn.addEventListener('click', async () => {
         showResult(result.data.translated, target);
       } else if (response.status === 401) {
         showError('translateError', 'Session expired. Please login again.');
-        setTimeout(() => {
-          logoutBtn.click();
-        }, 2000);
+        setTimeout(() => logoutBtn.click(), 2000);
       } else {
         const error = await response.json();
         showError('translateError', error.message || 'Translation failed');
@@ -128,41 +155,58 @@ translateBtn.addEventListener('click', async () => {
   });
 });
 
+// Clear
 clearBtn.addEventListener('click', () => {
   inputText.value = '';
-  charCount.textContent = '0';
-  clearBtn.classList.add('hidden');
+  updateCharCount();
+  hideResult();
   hideError('translateError');
-  resultCard.classList.add('hidden');
-  resultPlaceholder.classList.remove('hidden');
 });
 
-inputText.addEventListener('input', () => {
+// Input changes
+inputText.addEventListener('input', updateCharCount);
+
+sourceLang.addEventListener('change', hideResult);
+targetLang.addEventListener('change', hideResult);
+
+// Text-to-speech
+speakBtn.addEventListener('click', () => {
+  const text = resultText.textContent;
+  
+  if (!text) return;
+  
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    speakBtn.classList.remove('speaking');
+    return;
+  }
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  const langMap = {
+    'en': 'en-US',
+    'ar': 'ar-SA',
+    'darija': 'ar-MA',
+    'fr': 'fr-FR',
+    'es': 'es-ES'
+  };
+  
+  utterance.lang = langMap[targetLang.value] || 'en-US';
+  utterance.rate = 0.9;
+  
+  utterance.onstart = () => speakBtn.classList.add('speaking');
+  utterance.onend = () => speakBtn.classList.remove('speaking');
+  utterance.onerror = () => speakBtn.classList.remove('speaking');
+  
+  window.speechSynthesis.speak(utterance);
+});
+
+// Helper functions
+function updateCharCount() {
   const length = inputText.value.length;
   charCount.textContent = length;
-  
-  if (length > 0) {
-    clearBtn.classList.remove('hidden');
-  } else {
-    clearBtn.classList.add('hidden');
-  }
-  
-  if (length > 450) {
-    charCount.parentElement.classList.add('char-counter-warning');
-  } else {
-    charCount.parentElement.classList.remove('char-counter-warning');
-  }
-});
-
-sourceLang.addEventListener('change', () => {
-  resultCard.classList.add('hidden');
-  resultPlaceholder.classList.remove('hidden');
-});
-
-targetLang.addEventListener('change', () => {
-  resultCard.classList.add('hidden');
-  resultPlaceholder.classList.remove('hidden');
-});
+  clearBtn.classList.toggle('hidden', length === 0);
+  charCount.parentElement.classList.toggle('char-counter-warning', length > 450);
+}
 
 function showTranslatorScreen() {
   loginScreen.classList.add('hidden');
@@ -174,7 +218,6 @@ function showTranslatorScreen() {
 function showResult(translation, lang) {
   resultText.textContent = translation;
   
-  // Set RTL for Arabic/Darija
   if (lang === 'ar' || lang === 'darija') {
     resultText.setAttribute('dir', 'rtl');
   } else {
@@ -185,10 +228,14 @@ function showResult(translation, lang) {
   resultPlaceholder.classList.add('hidden');
 }
 
+function hideResult() {
+  resultCard.classList.add('hidden');
+  resultPlaceholder.classList.remove('hidden');
+}
+
 function showError(errorId, message) {
   const errorContainer = document.getElementById(errorId);
-  const errorText = errorContainer.querySelector('.error-text');
-  errorText.textContent = message;
+  errorContainer.querySelector('.error-text').textContent = message;
   errorContainer.classList.remove('hidden');
 }
 
@@ -197,21 +244,12 @@ function hideError(errorId) {
 }
 
 function setLoading(type, isLoading) {
-  if (type === 'login') {
-    const btn = loginBtn;
-    const text = document.getElementById('loginBtnText');
-    const spinner = document.getElementById('loginSpinner');
-    
-    btn.disabled = isLoading;
-    text.classList.toggle('hidden', isLoading);
-    spinner.classList.toggle('hidden', !isLoading);
-  } else if (type === 'translate') {
-    const btn = translateBtn;
-    const text = document.getElementById('translateBtnText');
-    const spinner = document.getElementById('translateSpinner');
-    
-    btn.disabled = isLoading;
-    text.classList.toggle('hidden', isLoading);
-    spinner.classList.toggle('hidden', !isLoading);
-  }
+  const btn = type === 'login' ? loginBtn : translateBtn;
+  const text = document.getElementById(`${type}BtnText`);
+  const spinner = document.getElementById(`${type}Spinner`);
+  
+  btn.disabled = isLoading;
+  text.classList.toggle('hidden', isLoading);
+  spinner.classList.toggle('hidden', !isLoading);
 }
+
