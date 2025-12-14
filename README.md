@@ -1,8 +1,8 @@
-# Project N°1 - LLM Powered Application for Translation
+# Project N°1 - LLM Powered Translation App
 
-This project aims to learn how to create an LLM-based application and requires creating a RESTful web service to be consumed by two clients: a web/mobile app using the technology of choice and a Chrome extension for more flexibility and ease of use.
+This project focuses on developing an LLM-based application, which involves creating a RESTful web service to be accessed by two client platforms: a web/mobile app built with the technology of our choice and a Chrome extension for enhanced flexibility and ease of use.
 
-In this README file, I'll present an overview of my project, the technologies used, the functionalities implemented, and a guide on how to install and run it on your local machine.
+In this README file, I will provide an overview of the project, outline the technologies used, describe the implemented features, and offer a step-by-step guide on how to install and run the application locally.
 
 ## Project Overview
 
