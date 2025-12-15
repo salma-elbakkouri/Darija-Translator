@@ -23,13 +23,19 @@ This project provides translation services from multiple languages using an LLM 
 | **Text-to-Speech (Web)** | Speech Synthesis Browser API |
 | **Text-to-Speech (Mobile)** | Expo Speech Library |
 
+## Graphical Abstract
+
+The following diagram represents the complete pipeline of the application, illustrating the full flow from user interaction through the backend processing to the final output:
+
+![Graphical Abstract](graphical-abstracts/full-pipeline.png)
+
 ## Architecture
 
 The project follows a **client-server** architecture where three frontend clients (Web, Mobile, and Extension) consume the backend API (Node.js server) via HTTP requests using the **Fetch API**. The backend communicates with the **Gemini AI model** by building and sending prompts, then returns the translation response to the clients. The API is **secured** with **authentication**, meaning translation can only be performed if the user is authenticated correctly.
 
-![Architecture Diagram](screenshots/architecture.png)
+![Architecture Diagram](graphical-abstracts/architecture.png)
 
-## (1) Backend API
+## Backend API
 
 The backend is a RESTful API built with Node.js and Express that handles translation requests.
 
@@ -47,12 +53,12 @@ I tested my API using two tools to ensure everything works correctly:
 **1. Postman**  
 I first tested my API using Postman to verify both the public and protected routes.
 
-![Postman Testing](screenshots/postman-test.png)
+![Postman Testing](graphical-abstracts/postman-test.png)
 
 **2. Thunder Client**  
 I then moved to using Thunder Client, which is a REST client integrated directly into VS Code for easier and faster testing during development.
 
-![Thunder Client Testing](screenshots/thunder-client-test.png)
+![Thunder Client Testing](graphical-abstracts/thunder-client-test.png)
 
 ## Web & Mobile App
 
@@ -65,7 +71,7 @@ I used **React Native** for building a cross-platform application that works on 
 - **Backend Communication**: Fetch API to communicate with the backend
 - **Dark Mode & Responsive Design**: Added for a smooth & intuitive user experience across all devices
 
-![Mobile & Web App](screenshots/cover.png)
+![Mobile & Web App](graphical-abstracts/cover.png)
 
 ## Chrome Extension
 
@@ -77,7 +83,7 @@ A lightweight browser extension with a side panel interface for quick translatio
 - **Manifest V3**: Using the latest Chrome extension standard for better security and performance
 - **Backend Communication**: Fetch API to communicate with the backend API
 
-![Chrome Extension](screenshots/chrome-extension.png)
+![Chrome Extension](graphical-abstracts/chrome-extension.png)
 
 ## 🚀 How to Install and Run the Project
 
