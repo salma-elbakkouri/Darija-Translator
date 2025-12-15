@@ -23,7 +23,7 @@ This project provides translation services from multiple languages using an LLM 
 | **Text-to-Speech (Web)** | Speech Synthesis Browser API |
 | **Text-to-Speech (Mobile)** | Expo Speech Library |
 
-## Graphical Abstract
+## Full Pipeline
 
 The following diagram represents the complete pipeline of the application, illustrating the full flow from user interaction through the backend processing to the final output:
 
